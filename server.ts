@@ -9,6 +9,11 @@ const handleRemixRequest = createRequestHandler(build as any as ServerBuild);
 
 export default {
   async fetch(request, env, ctx) {
+    // const roomId = env.ROOM.idFromName("test");
+    // const room = env.ROOM.get(roomId);
+
+    // return new Response(await room.sayHello());
+
     try {
       const loadContext = getLoadContext({
         request,

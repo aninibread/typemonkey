@@ -1,4 +1,7 @@
 import type { MetaFunction } from "@remix-run/cloudflare";
+import type { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { useEffect, useState } from "react";
+import { Form, useFetcher, useNavigate } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -7,47 +10,50 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+
+export async function loader({ context }: LoaderFunctionArgs) {
+  const { env, cf, ctx } = context.cloudflare;
+
+  const room = env.ROOM.newUniqueId();
+  // const room = env.ROOM.get(roomId);
+  // console.log(await room.sayHello())
+  const roomId = room.toString();
+
+  return roomId
+}
+
 export default function Index() {
+  const fetcher = useFetcher<typeof loader>();
+
+  useEffect(() => {
+    if (fetcher.data != null) {
+      navigate("/room/" + fetcher.data);
+    }
+  }, [fetcher.data])
+
+  const [counter, setCounter] = useState(0);
+  const [screenName, setScreenName] = useState("");
+  const navigate = useNavigate();
+
+  const onCreateRoom = () => {
+    setCounter(counter + 1)
+    fetcher.load("/?index")
+  }
+
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="flex flex-col items-center gap-16">
         <header className="flex flex-col items-center gap-9">
           <h1 className="leading text-2xl font-bold text-gray-800 dark:text-gray-100">
-            Welcome to <span className="sr-only">Remix</span>
+            Welcome to Type Monkey {counter}
           </h1>
-          <div className="h-[144px] w-[434px]">
-            <img
-              src="/logo-light.png"
-              alt="Remix"
-              className="block w-full dark:hidden"
-            />
-            <img
-              src="/logo-dark.png"
-              alt="Remix"
-              className="hidden w-full dark:block"
-            />
-          </div>
         </header>
-        <nav className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
-          <p className="leading-6 text-gray-700 dark:text-gray-200">
-            What&apos;s next?
-          </p>
-          <ul>
-            {resources.map(({ href, text, icon }) => (
-              <li key={href}>
-                <a
-                  className="group flex items-center gap-3 self-stretch p-3 leading-normal text-blue-700 hover:underline dark:text-blue-500"
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {icon}
-                  {text}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+          <button onClick={ onCreateRoom }>Create Room</button>
+        <section>
+          <h2>How to Play</h2>
+          <p>1. Create or join a room with your friends.</p>
+          <p>2. Ready up and race to type the phrase fastest and most accurately!</p>
+      </section>
       </div>
     </div>
   );
